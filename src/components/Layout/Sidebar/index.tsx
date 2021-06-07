@@ -1,6 +1,7 @@
 import {
   ClockIcon,
   CogIcon,
+  ExclamationIcon,
   SparklesIcon,
   XIcon,
 } from '@heroicons/react/outline';
@@ -17,6 +18,7 @@ import VersionStatus from '../VersionStatus';
 const messages = defineMessages({
   dashboard: 'Discover',
   requests: 'Requests',
+  issues: 'Issues',
   users: 'Users',
   settings: 'Settings',
 });
@@ -33,6 +35,7 @@ interface SidebarLinkProps {
   activeRegExp: RegExp;
   as?: string;
   requiredPermission?: Permission | Permission[];
+  permissionType?: 'and' | 'or';
 }
 
 const SidebarLinks: SidebarLinkProps[] = [
@@ -51,6 +54,20 @@ const SidebarLinks: SidebarLinkProps[] = [
       <ClockIcon className="w-6 h-6 mr-3 text-gray-300 transition duration-150 ease-in-out group-hover:text-gray-100 group-focus:text-gray-300" />
     ),
     activeRegExp: /^\/requests/,
+  },
+  {
+    href: '/issues',
+    messagesKey: 'issues',
+    svgIcon: (
+      <ExclamationIcon className="w-6 h-6 mr-3 text-gray-300 transition duration-150 ease-in-out group-hover:text-gray-100 group-focus:text-gray-300" />
+    ),
+    activeRegExp: /^\/issues/,
+    requiredPermission: [
+      Permission.MANAGE_ISSUES,
+      Permission.CREATE_ISSUES,
+      Permission.VIEW_ISSUES,
+    ],
+    permissionType: 'or',
   },
   {
     href: '/users',
@@ -129,7 +146,9 @@ const Sidebar: React.FC<SidebarProps> = ({ open, setClosed }) => {
                     <nav className="flex-1 px-2 mt-5 space-y-1">
                       {SidebarLinks.filter((link) =>
                         link.requiredPermission
-                          ? hasPermission(link.requiredPermission)
+                          ? hasPermission(link.requiredPermission, {
+                              type: link.permissionType ?? 'and',
+                            })
                           : true
                       ).map((sidebarLink) => {
                         return (
@@ -194,7 +213,9 @@ const Sidebar: React.FC<SidebarProps> = ({ open, setClosed }) => {
               <nav className="flex-1 px-2 mt-5 space-y-1 bg-gray-800">
                 {SidebarLinks.filter((link) =>
                   link.requiredPermission
-                    ? hasPermission(link.requiredPermission)
+                    ? hasPermission(link.requiredPermission, {
+                        type: link.permissionType ?? 'and',
+                      })
                     : true
                 ).map((sidebarLink) => {
                   return (
